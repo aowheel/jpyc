@@ -1,0 +1,9 @@
+{
+	"name": "jpyc",
+	"version": "1.0.0",
+	"main": "index.js",
+	"license": "MIT",
+	"dependencies": {
+		"@jpyc/sdk-v1": "^1.2.3"
+	}
+}
