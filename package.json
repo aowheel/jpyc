@@ -10,7 +10,8 @@
 	},
 	"dependencies": {
 		"@jpyc/sdk-v1": "^1.2.3",
-		"tslib": "^2.8.1"
+		"tslib": "^2.8.1",
+		"viem": "^2.37.12"
 	},
 	"devDependencies": {
 		"@types/node": "^24.3.1",
