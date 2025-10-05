@@ -1,4 +1,4 @@
-# JPYC SDK v1 サンプルプロジェクト
+# JPYC Contract Interaction Sample
 
 このプロジェクトはSepoliaテストネット上のJPYCコントラクトと対話するためのサンプル実装です。
 
