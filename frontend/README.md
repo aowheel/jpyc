@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# JPYC EC Demo
 
-## Getting Started
+Gas-free EC site demo using JPYC EIP-3009 `receiveWithAuthorization` functionality.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- 🛒 Product catalog with shopping cart
+- 💳 MetaMask wallet connection
+- ⛽ Gas-free transactions (operator pays gas fees)
+- 🔐 EIP-712 signature-based authorization
+- 💰 JPYC token payments
+
+## How it works
+
+1. **Customer Experience**: Users can browse products, add them to cart, and purchase using only JPYC tokens without worrying about gas fees
+2. **Gas-free Transactions**: The shop operator runs a relayer service that pays for gas fees
+3. **Secure Authorization**: Uses EIP-3009 `receiveWithAuthorization` with EIP-712 signatures for secure, off-chain authorization
+4. **Instant Settlement**: Transactions are executed immediately when customers sign the authorization
+
+## Setup
+
+1. **Install dependencies**:
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+2. **Environment Configuration**:
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   Edit `.env.local` and set:
+   ```
+   RELAYER_PRIVATE_KEY=0x... # Private key for the shop operator/relayer account
+   RPC_ENDPOINT=https://sepolia.infura.io/v3/YOUR_INFURA_KEY
+   ```
+
+3. **Prepare Accounts**:
+   - **Relayer Account**: Fund with ETH for gas fees (acts as shop operator)
+   - **Customer Account**: Fund with JPYC tokens for purchases
+
+4. **Run the application**:
+   ```bash
+   npm run dev
+   ```
+
+5. **Test the flow**:
+   - Open http://localhost:3000
+   - Connect MetaMask wallet (make sure you're on Sepolia testnet)
+   - Add products to cart
+   - Click "Purchase with JPYC"
+   - Sign the authorization message
+   - Transaction will be executed by the relayer
+
+## Architecture
+
+```
+Customer (MetaMask) -> Frontend -> Backend API -> Blockchain
+                    |          |                      ^
+                    |          v                      |
+                    |    EIP-712 Signature            |
+                    |          |                      |
+                    |          v                      |
+                    |    receiveWithAuthorization     |
+                    |          |                      |
+                    |          v                      |
+                    |    Relayer Account -------------|
+                              (pays gas)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Contract Information
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **JPYC Contract**: `0x431D5dfF03120AFA4bDf332c61A6e1766eF37BDB` (Sepolia)
+- **Chain**: Sepolia Testnet (Chain ID: 11155111)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Key Components
 
-## Learn More
+- **Frontend**: Next.js with wagmi for wallet interaction
+- **Backend**: Next.js API route for relayer service
+- **Wallet**: MetaMask for signing authorizations
+- **Blockchain**: Sepolia testnet with JPYC contract
 
-To learn more about Next.js, take a look at the following resources:
+## Security Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- EIP-712 typed data signatures prevent replay attacks
+- Nonce-based authorization prevents double spending
+- Time-limited authorization (1 hour validity)
+- Amount validation on both frontend and backend
