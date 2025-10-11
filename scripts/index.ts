@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { Command } from "commander";
 import { type Address, type Hex, parseUnits } from "viem";
 import { sepolia } from "viem/chains";
 import { JPYC_ADDRESS } from "./config/constants";
@@ -139,4 +140,19 @@ async function receiveWithAuthorization() {
 	console.log("🎉 Transfer completed! Transaction hash:", txHash);
 }
 
-receiveWithAuthorization();
+const program = new Command();
+
+program.name("jpyc-scripts").description("JPYC scripts").version("1.0.0");
+
+program
+	.command("transfer-with-authorization")
+	.requiredOption("--to <to>")
+	.action(async (options) => {
+		await transferWithAuthorization(options.to);
+	});
+
+program.command("receive-with-authorization").action(async () => {
+	await receiveWithAuthorization();
+});
+
+program.parseAsync();
