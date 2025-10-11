@@ -11,9 +11,11 @@ import { sepolia } from "viem/chains";
 import { JPYC_ABI } from "../config/abi";
 import { JPYC_ADDRESS } from "../config/constants";
 
+const rpcEndpoint = process.env.RPC_ENDPOINT;
+
 export const publicClient = createPublicClient({
 	chain: sepolia,
-	transport: http(),
+	transport: http(rpcEndpoint),
 });
 
 export const readContract = getContract({
@@ -22,10 +24,14 @@ export const readContract = getContract({
 	client: publicClient,
 }).read;
 
+export const userAccount = privateKeyToAccount(
+	process.env.USER_PRIVATE_KEY as Address,
+);
+
 export const userClient = createWalletClient({
-	account: privateKeyToAccount(process.env.USER_PRIVATE_KEY as Address),
+	account: userAccount,
 	chain: sepolia,
-	transport: http(),
+	transport: http(rpcEndpoint),
 });
 
 export const writeContractByUser = getContract({
@@ -34,10 +40,14 @@ export const writeContractByUser = getContract({
 	client: userClient,
 }).write;
 
+export const relayerAccount = privateKeyToAccount(
+	process.env.RELAYER_PRIVATE_KEY as Address,
+);
+
 export const relayerClient = createWalletClient({
-	account: privateKeyToAccount(process.env.RELAYER_PRIVATE_KEY as Address),
+	account: relayerAccount,
 	chain: sepolia,
-	transport: http(),
+	transport: http(rpcEndpoint),
 });
 
 export const writeContractByRelayer = getContract({
