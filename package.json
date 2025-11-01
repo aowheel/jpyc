@@ -1,5 +1,9 @@
 {
 	"name": "jpyc",
 	"version": "1.0.0",
-	"license": "MIT"
+	"license": "MIT",
+	"scripts": {
+		"frontend": "pnpm --filter frontend",
+		"scripts": "pnpm --filter scripts"
+	}
 }

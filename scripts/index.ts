@@ -4,6 +4,7 @@ import { type Address, type Hex, parseUnits } from "viem";
 import { sepolia } from "viem/chains";
 import { JPYC_ADDRESS } from "./config/constants";
 import {
+	readContract,
 	relayerAccount,
 	userAccount,
 	userClient,
@@ -140,6 +141,80 @@ async function receiveWithAuthorization() {
 	console.log("🎉 Transfer completed! Transaction hash:", txHash);
 }
 
+async function permit(spender: Address, amount: string) {
+	console.log("🚀 EIP-2612 Permit");
+
+	// Construct permit parameters
+	console.log("📝 Constructing permit parameters...");
+	const nonce = await readContract.nonces([userAccount.address]);
+	const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600); // valid for 1 hour
+	const permitData = {
+		owner: userAccount.address,
+		spender,
+		value: parseUnits(amount, 18),
+		nonce,
+		deadline,
+	} as const;
+	console.log("✅ Permit parameters:", permitData);
+
+	// Generate signature using EIP-712 typed data signing
+	console.log("✍️ Generating signature...");
+	const signature = await userClient.signTypedData({
+		domain: {
+			name: "JPY Coin",
+			version: "1",
+			chainId: sepolia.id,
+			verifyingContract: JPYC_ADDRESS,
+		},
+		types: {
+			Permit: [
+				{ name: "owner", type: "address" },
+				{ name: "spender", type: "address" },
+				{ name: "value", type: "uint256" },
+				{ name: "nonce", type: "uint256" },
+				{ name: "deadline", type: "uint256" },
+			],
+		},
+		primaryType: "Permit",
+		message: {
+			owner: permitData.owner,
+			spender: permitData.spender,
+			value: permitData.value,
+			nonce: permitData.nonce,
+			deadline: permitData.deadline,
+		},
+	});
+	const r = `0x${signature.slice(2, 66)}` as Hex;
+	const s = `0x${signature.slice(66, 130)}` as Hex;
+	const v = Number(`0x${signature.slice(130, 132)}`);
+	console.log("✅ Signature components:", { v, r, s });
+
+	// Execute permit via relayer
+	console.log("📡 Submitting permit...");
+	const txHash = await writeContractByRelayer.permit([
+		permitData.owner,
+		permitData.spender,
+		permitData.value,
+		permitData.deadline,
+		v,
+		r,
+		s,
+	]);
+	console.log("🎉 Permit submitted! Transaction hash:", txHash);
+}
+
+async function transferFrom(from: Address, to: Address, amount: string) {
+	console.log("🚀 Standard transferFrom");
+
+	console.log("📝 Constructing transferFrom parameters...");
+	const value = parseUnits(amount, 18);
+	console.log("✅ transferFrom parameters:", { from, to, value });
+
+	console.log("📡 Executing transferFrom...");
+	const txHash = await writeContractByRelayer.transferFrom([from, to, value]);
+	console.log("🎉 transferFrom completed! Transaction hash:", txHash);
+}
+
 const program = new Command();
 
 program.name("jpyc-scripts").description("JPYC scripts").version("1.0.0");
@@ -154,5 +229,26 @@ program
 program.command("receive-with-authorization").action(async () => {
 	await receiveWithAuthorization();
 });
+
+program
+	.command("permit")
+	.requiredOption("--spender <spender>")
+	.option("--amount <amount>", "Token amount (JPYC)", "100")
+	.action(async (options) => {
+		await permit(options.spender as Address, options.amount as string);
+	});
+
+program
+	.command("transfer-from")
+	.requiredOption("--from <from>")
+	.requiredOption("--to <to>")
+	.option("--amount <amount>", "Token amount (JPYC)", "100")
+	.action(async (options) => {
+		await transferFrom(
+			options.from as Address,
+			options.to as Address,
+			options.amount as string,
+		);
+	});
 
 program.parseAsync();

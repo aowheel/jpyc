@@ -14,3 +14,13 @@ cd jpyc
 ```sh
 pnpm install
 ```
+
+3. **フロントエンドの起動**
+```sh
+pnpm frontend dev
+```
+
+4. **スクリプトのヘルプ表示**
+```sh
+pnpm scripts start -h
+```
