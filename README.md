@@ -15,12 +15,18 @@ cd jpyc
 pnpm install
 ```
 
-3. **フロントエンドの起動**
+3. **環境変数ファイルのコピー**
+```sh
+cp scripts/.env.example scripts/.env
+cp frontend/.env.example frontend/.env
+```
+
+4. **フロントエンドの起動**
 ```sh
 pnpm frontend dev
 ```
 
-4. **スクリプトのヘルプ表示**
+5. **スクリプトのヘルプ表示**
 ```sh
 pnpm scripts start -h
 ```
